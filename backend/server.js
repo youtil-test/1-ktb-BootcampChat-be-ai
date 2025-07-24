@@ -3,15 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const http = require('http');
-const socketIO = require('socket.io');
+
 const path = require('path');
-const { router: roomsRouter, initializeSocket } = require('./routes/api/rooms');
-const routes = require('./routes');
-const { initProducer } = require('./utils/kafkaProducer');
+
+
 const { run } = require('./worker/aiConsumerWorker');
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8082;
 
 // trust proxy 설정 추가
 app.set('trust proxy', 1);
@@ -71,15 +70,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API 라우트 마운트
-app.use('/api', routes);
 
-// Socket.IO 설정
-const io = socketIO(server, { cors: corsOptions });
-require('./sockets/chat')(io);
 
-// Socket.IO 객체 전달
-initializeSocket(io);
+
 
 // 404 에러 핸들러
 app.use((req, res) => {
@@ -102,8 +95,8 @@ app.use((err, req, res, next) => {
 });
 (async () => {
   try {
-    await initProducer();
-    console.log('Kafka producer connected.');
+    
+  
 
     run()
       .then(() => console.log('Kafka consumer running.'))
